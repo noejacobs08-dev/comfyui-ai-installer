@@ -1,23 +1,27 @@
 # ============================================================
-#  ComfyUI - Chapter 1: AI Influencer Base Setup (WAN 2.2)
+#  ComfyUI - Chapter 1: AI Influencer Base Setup (Ubuntu base)
 # ============================================================
 
-# 1️⃣ Use the official ComfyUI base image
-FROM registry.gitlab.com/a1111-webui/containers/comfyui:latest
+FROM ubuntu:22.04
 
-# 2️⃣ Set the working directory
+# Set working directory
 WORKDIR /workspace
 
-# 3️⃣ Install small utilities (for wget/git)
-RUN apt-get update && apt-get install -y wget git && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y wget git python3 python3-venv python3-pip ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
-# 4️⃣ Copy workflow and startup script
+# Clone ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git
+
+# Copy workflow and startup script
 COPY workflows /workspace/workflows
 COPY start.sh /workspace/start.sh
 RUN chmod +x /workspace/start.sh
 
-# 5️⃣ Expose ComfyUI's port
+# Expose ComfyUI web port
 EXPOSE 8188
 
-# 6️⃣ Run the start script
+# Run the start script
 CMD ["/bin/bash", "/workspace/start.sh"]
