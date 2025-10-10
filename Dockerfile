@@ -3,7 +3,7 @@
 # ============================================================
 
 # 1️⃣ Use the official ComfyUI base image
-FROM ghcr.io/comfyanonymous/comfyui:latest
+FROM registry.gitlab.com/a1111-webui/containers/comfyui:latest
 
 # 2️⃣ Set the working directory
 WORKDIR /workspace
