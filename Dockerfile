@@ -29,7 +29,13 @@ RUN chmod +x /workspace/install_models.sh
 EXPOSE 8188
 EXPOSE 8888
 
-# Launch JupyterLab + ComfyUI
+# Launch setup and start services
 CMD bash -c "\
+  if [ ! -f /workspace/ComfyUI/models/.installed ]; then \
+    echo '🚀 First-time setup: installing models...'; \
+    bash /workspace/install_models.sh && touch /workspace/ComfyUI/models/.installed; \
+  else \
+    echo '✅ Models already installed, skipping download.'; \
+  fi; \
   jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' & \
   cd /workspace/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188"
