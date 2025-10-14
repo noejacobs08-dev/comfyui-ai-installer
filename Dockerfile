@@ -4,7 +4,6 @@
 
 FROM ubuntu:22.04
 
-# Set working directory
 WORKDIR /workspace
 
 # Install system dependencies + JupyterLab
@@ -17,16 +16,19 @@ RUN apt-get update && \
 # Clone ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git
 
-# Copy workflow and startup script (optional for future customization)
+# Copy workflows and install script
 COPY workflows /workspace/workflows
-COPY start.sh /workspace/start.sh
-RUN chmod +x /workspace/start.sh
+COPY install_models.sh /workspace/install_models.sh
+RUN chmod +x /workspace/install_models.sh
+
+# Run the model installer for this chapter
+RUN bash /workspace/install_models.sh
 
 # Expose both ComfyUI and JupyterLab ports
 EXPOSE 8188
 EXPOSE 8888
 
-# Default startup command: run JupyterLab + ComfyUI together
+# Launch JupyterLab + ComfyUI
 CMD bash -c "\
   jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' & \
   cd /workspace/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188"
