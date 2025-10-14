@@ -13,23 +13,20 @@ RUN apt-get update && \
     pip install jupyterlab && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone ComfyUI
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git
+# Clone ComfyUI from GitHub
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
 
-# Copy workflows and install script
+# Copy your installer + workflows into container
+COPY install_models.sh /workspace/install_models.sh
 COPY workflows /workspace/workflows
-COPY install_models.sh /workspace/install_models.sh
+
 RUN chmod +x /workspace/install_models.sh
 
-# Copy model installer but run it only when container starts
-COPY install_models.sh /workspace/install_models.sh
-RUN chmod +x /workspace/install_models.sh
-
-# Expose both ComfyUI and JupyterLab ports
+# Expose ports
 EXPOSE 8188
 EXPOSE 8888
 
-# Launch setup and start services
+# Combined startup command
 CMD bash -c "\
   if [ ! -f /workspace/ComfyUI/models/.installed ]; then \
     echo '🚀 First-time setup: installing models...'; \
