@@ -21,8 +21,9 @@ COPY workflows /workspace/workflows
 COPY install_models.sh /workspace/install_models.sh
 RUN chmod +x /workspace/install_models.sh
 
-# Run the model installer for this chapter
-RUN bash /workspace/install_models.sh
+# Copy model installer but run it only when container starts
+COPY install_models.sh /workspace/install_models.sh
+RUN chmod +x /workspace/install_models.sh
 
 # Expose both ComfyUI and JupyterLab ports
 EXPOSE 8188
