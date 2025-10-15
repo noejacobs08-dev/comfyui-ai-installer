@@ -1,41 +1,34 @@
 # ============================================================
-#  ComfyUI - Chapter 1: AI Influencer Base Setup (Ubuntu base)
+#  ComfyUI - Base Installer (fast startup, manual model install)
 # ============================================================
 
 FROM ubuntu:22.04
 
-WORKDIR /workspace
+# Set working directory
+WORKDIR /opt/comfy
 
-# Install system dependencies + JupyterLab
+# Install dependencies
 RUN apt-get update && \
     apt-get install -y wget git python3 python3-venv python3-pip ffmpeg && \
-    pip install --upgrade pip && \
     pip install jupyterlab && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone ComfyUI from GitHub
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
+# Clone ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git
 
-# Copy your installer + workflows into container
-COPY install_models.sh /workspace/install_models.sh
-COPY workflows /workspace/workflows
+# Copy your scripts and workflows
+COPY install_models.sh /opt/comfy/install_models.sh
+COPY workflows /opt/comfy/workflows
 
-RUN chmod +x /workspace/install_models.sh
-
-# 🔍 Debug: list everything inside /workspace before running anything
-RUN echo "=== /workspace after COPY ===" && ls -R /workspace
+RUN chmod +x /opt/comfy/install_models.sh
 
 # Expose ports
 EXPOSE 8188
 EXPOSE 8888
 
-# Combined startup command
+# Default startup (no model install)
 CMD bash -c "\
-  if [ ! -f /workspace/ComfyUI/models/.installed ]; then \
-    echo '🚀 First-time setup: installing models...'; \
-    bash /workspace/install_models.sh && touch /workspace/ComfyUI/models/.installed; \
-  else \
-    echo '✅ Models already installed, skipping download.'; \
-  fi; \
+  echo '🚀 Starting JupyterLab (manual model installation enabled)...'; \
   jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' & \
-  cd /workspace/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188"
+  echo '🚀 Starting ComfyUI...'; \
+  cd /opt/comfy/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188"
