@@ -13,9 +13,6 @@ RUN apt-get update && \
     pip install jupyterlab && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone ComfyUI into workspace
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
-
 # Copy scripts and workflows
 COPY install_models.sh /workspace/install_models.sh
 COPY workflows /workspace/workflows
@@ -26,9 +23,28 @@ RUN chmod +x /workspace/install_models.sh
 EXPOSE 8188
 EXPOSE 8888
 
-# Start both ComfyUI and JupyterLab, no model installation
-CMD bash -c "\
-  echo '🚀 Starting JupyterLab (manual model install available)...'; \
-  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password='' & \
-  echo '🚀 Starting ComfyUI...'; \
-  cd /workspace/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188"
+# Start both JupyterLab and ComfyUI (clone on first launch)
+CMD bash -c '\
+  if [ ! -d /workspace/ComfyUI ]; then \
+    echo "📦 Cloning ComfyUI repository..."; \
+    ( \
+      git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI & \
+      pid=$!; \
+      sp="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; \
+      echo -n "   "; \
+      while kill -0 $pid 2>/dev/null; do \
+        for i in $(seq 0 9); do \
+          printf "\b${sp:$i:1}"; \
+          sleep 0.1; \
+        done; \
+      done; \
+      wait $pid; \
+    ); \
+    echo "✅ ComfyUI cloned successfully!"; \
+  else \
+    echo "✅ ComfyUI already exists — skipping clone."; \
+  fi; \
+  echo "🚀 Starting JupyterLab..."; \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token="" --NotebookApp.password="" & \
+  echo "🚀 Starting ComfyUI..."; \
+  cd /workspace/ComfyUI && python3 main.py --listen 0.0.0.0 --port 8188'
