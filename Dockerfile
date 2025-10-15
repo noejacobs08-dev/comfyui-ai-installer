@@ -22,6 +22,9 @@ COPY workflows /workspace/workflows
 
 RUN chmod +x /workspace/install_models.sh
 
+# 🔍 Debug: list everything inside /workspace before running anything
+RUN echo "=== /workspace after COPY ===" && ls -R /workspace
+
 # Expose ports
 EXPOSE 8188
 EXPOSE 8888
