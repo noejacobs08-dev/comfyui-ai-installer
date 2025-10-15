@@ -14,10 +14,11 @@ jobs:
       packages: write
 
     steps:
+      # 🧩 1️⃣ Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 🧩 Debug step — show what's in the workspace
+      # 🧩 2️⃣ Show build context (so we can confirm files exist)
       - name: Verify build context
         run: |
           echo "=== Current directory ==="
@@ -25,7 +26,7 @@ jobs:
           echo "=== Listing all files ==="
           ls -R
 
-      # 🧠 Log in to GitHub Container Registry
+      # 🧠 3️⃣ Login to GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -33,10 +34,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 🏗️ Build and push Docker image
+      # 🏗️ 4️⃣ Build and push Docker image (no cache)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          file: ${{ github.workspace }}/Dockerfile
           context: ${{ github.workspace }}
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
+          no-cache: true
+
+      # 🪪 5️⃣ Confirm image details
+      - name: Confirm image built and pushed
+        run: |
+          echo "✅ Docker image pushed to:"
+          echo "   ghcr.io/${{ github.repository }}:latest"
