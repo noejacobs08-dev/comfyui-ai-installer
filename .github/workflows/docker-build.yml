@@ -17,6 +17,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 🧩 Debug step — show what's in the workspace
+      - name: Verify build context
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Listing all files ==="
+          ls -R
+
+      # 🧠 Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -24,9 +33,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 🏗️ Build and push Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ github.workspace }}
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
